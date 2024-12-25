@@ -9,7 +9,6 @@ import asyncio
 from aiogram.types import (InlineKeyboardMarkup, InlineKeyboardButton)
 from calculate import bmi_calc, sys10_2, sys2_10
 from en_decode import encode, decode
-from aiogram.enums.message_entity_type import MessageEntityType
 
 
 """                                          
@@ -38,16 +37,15 @@ async def start(message: Message):
    menu = InlineKeyboardMarkup(
                             inline_keyboard=
                             [
-                            [
-                            InlineKeyboardButton(text='Калькулятор ИМТ', callback_data='bmi_calc'),
-                            InlineKeyboardButton(text='Калькулятор систем счислений', callback_data='calc_ofNumSys')
-                            ]
+                            [InlineKeyboardButton(text='Калькулятор ИМТ', callback_data='bmi_calc'),
+                            InlineKeyboardButton(text='Калькулятор систем счислений', callback_data='calc_ofNumSys')],
+                            [InlineKeyboardButton(text='Репозиторий в GitHub', url='https://github.com/Shv3pcy/project.git')]
                             ]
                             )
                     
    await message.reply_photo(photo="https://dc-agency.org/wp-content/uploads/2019/09/0_veNN9p3Zi4gQa-Zc.png",
                           reply_markup=menu,
-                          caption=f"Привет. Выбери одно из действий.\n<code>> Калькулятор ИМТ</code>\n<code>> Калькулятор систем счислений</code>\n\n<a href='https://github.com/Shv3pcy/project.git'>Репозиторий в GitHub</a>", 
+                          caption=f"Привет. Выбери одно из действий.\n<blockquote expandable>Калькулятор ИМТ</blockquote>\n<blockquote expandable>Калькулятор систем счислений</blockquote>", 
                           parse_mode='HTML') # parse_mode - специальный параметр, для форматирования текста, чтобы задать тексту шрифт
                                           # reply_markup - параметр, с помощью которого прикрепим кнопки к сообщению
    
@@ -71,7 +69,7 @@ async def cancel(message: Message, state: FSMContext):
 async def reply_menu1(clb: CallbackQuery, state: FSMContext):
   await clb.answer()
   await state.set_state(Register.body_weight) # создаем регистр массы тела
-  await clb.message.reply("Введи свою массу тела в килограммах. Принимаем только целые значения.\nДля отмены - /cancel")
+  await clb.message.reply("Введи свою массу тела в килограммах. Принимаем только целые значения.\n<blockquote>Для отмены - /cancel</blockquote>", parse_mode='html')
 
 @router.message(Register.body_weight) # ловим регистр массы тела
 async def ref_body_weighta(message: Message, state: FSMContext):
@@ -89,7 +87,7 @@ async def ref_body_weighta(message: Message, state: FSMContext):
          await message.reply("Введи свой рост в метрах (например, 177см -> 1.77).")
  
    except Exception as e:
-      await message.reply(f"Ошибка! Возможно, ты ввел(а) данные в неправильном формате. Попробуй заново.\n<code>[error] {e}</code>", parse_mode='html')
+      await message.reply(f"Ошибка! Возможно, ты ввел(а) данные в неправильном формате. Попробуй заново.\n<pre><code class=language-Error>{e}</code></pre>", parse_mode='html')
       await state.set_state(Register.body_weight)
 
 @router.message(Register.body_height) # ловим регистр роста тела
@@ -102,22 +100,22 @@ async def ref_rost(message: Message, state: FSMContext):
       body_weight = int(data['body_weight'])
 
       if body_height >= 10:
-         await message.reply(f"Ты ввел(а) данные в неправильном формате:\n- Значение указать в метрах\n- Значение, не выше 10 метров.", parse_mode='html')
+         await message.reply(f"Ты ввел(а) данные в неправильном формате:\n<blockquote>Значение нужно указать в метрах, и не выше 10</blockquote>", parse_mode='html')
       
       else:
          result = bmi_calc(body_weight, body_height)
          if float(result) < 18:
-            await message.reply(f"<code>Твой вес: {body_weight} кг.\nТвой рост: {body_height} м.\nТвой индекс массы тела (ИМТ): {result}</code>\nТы худоват(а), тебе нужно набрать массу", parse_mode='html')
+            await message.reply(f"<blockquote expandable><code>Твой вес: {body_weight} кг.\nТвой рост: {body_height} м.\nТвой индекс массы тела (ИМТ): {result}</code>\nТы худоват(а), тебе нужно набрать массу</blockquote>", parse_mode='html')
          
          elif float(result) == 19 or float(result) < 25:
-            await message.reply(f"<code>Твой вес: {body_weight} кг.\nТвой рост: {body_height} м.\nТвой индекс массы тела (ИМТ): {result}</code>\nУ тебя средний ИМТ, это хорошо", parse_mode='html')
+            await message.reply(f"<blockquote expandable><code>Твой вес: {body_weight} кг.\nТвой рост: {body_height} м.\nТвой индекс массы тела (ИМТ): {result}</code>\nУ тебя средний ИМТ, это хорошо</blockquote>", parse_mode='html')
 
          elif float(result) > 26:
-            await message.reply(f"<code>Твой вес: {body_weight} кг.\nТвой рост: {body_height} м.\nТвой индекс массы тела (ИМТ): {result}</code>\nТебе нужно подбросить вес.", parse_mode='html')
+            await message.reply(f"<blockquote expandable><code>Твой вес: {body_weight} кг.\nТвой рост: {body_height} м.\nТвой индекс массы тела (ИМТ): {result}</code>\nТебе нужно подбросить вес.</blockquote>", parse_mode='html')
          await state.clear()
 
    except Exception as e:
-      await message.reply(f"Ошибка! Возможно, ты ввел(а) данные в неправильном формате. Попробуй заново.\n<code>[error] {e}</code>", parse_mode='html')
+      await message.reply(f"Ошибка! Возможно, ты ввел(а) данные в неправильном формате. Попробуй заново.\n<pre><code class=language-Error>{e}</code></pre>", parse_mode='html')
       await state.set_state(Register.body_weight)
 
 
@@ -133,7 +131,7 @@ async def reply_menu2(clb: CallbackQuery):
                             ]
                             ]
                             )
-   await clb.message.reply(f"Выбери тип перевода системы\n- Из двоичной в десятичную\n- Из десятичной в двоичную\nДля отмены - /cancel", reply_markup=basics)
+   await clb.message.reply(f"Выбери тип перевода системы\n<blockquote>Из двоичной в десятичную</blockquote>\n<blockquote>Из десятичной в двоичную</blockquote>\nДля отмены - /cancel", reply_markup=basics, parse_mode='html')
 
 @router.callback_query(F.data == 'from2_to10')
 async def system2(clb: CallbackQuery, state: FSMContext):
@@ -150,14 +148,22 @@ async def sysfrom2_to10(message: Message, state: FSMContext):
       if ban_list_numbers in str(data['f2s_t10s']):
         await message.reply('Это число не является двоичной системой. Введи соответствующее значение.')
         await state.set_state(Register.f2s_t10s)
+        data = str(data['f2s_t10s'])
+        
          
       else:
-         f2s_t10s = str(data['f2s_t10s'])
-         result = sys2_10(number=f2s_t10s)
-         await state.clear()
-         await message.reply(f"<code>{f2s_t10s} -> {result}</code>\nРезультат: <code>{result}</code>", parse_mode='HTML')
+         if len(str(data)) > 99:
+           await message.reply("Число слишком длинное. Лимит 99 символов. Отправь число поменьше.")
+           await state.set_state(Register.f2s_t10s)
+
+         else:
+           s2 = str(data['f2s_t10s'])
+           result = sys2_10(number=s2)
+
+           await state.clear()
+           await message.reply(f"<blockquote expandable><u>{s2}</u>² -> <code>{result}</code></blockquote>", parse_mode='HTML')
    except Exception as e:
-      await message.reply(f"<code>error: {e}</code>\n\nВводи только числа. Буквы и прочие символы не переводятся.\nТы не сможешь переводить слишком большие значения.", parse_mode='html')
+      await message.reply(f"<pre><code class=language-Error>{e}</code></pre>\nПри переводе систем, вы используете только <bold>целые числа</bold>, и <bold>не превышающие 10⁹⁹</bold>.", parse_mode='html')
       await state.set_state(Register.f2s_t10s)
       
 
@@ -172,17 +178,22 @@ async def sysfrom2_to10(message: Message, state: FSMContext):
    try:
       await state.update_data(f10s_t2s=message.text)
       data = await state.get_data()
-      f10s_t2s = int(data['f10s_t2s'])
-      result = sys10_2(number=f10s_t2s)
-      await state.clear()
-      await message.reply(f"<code>{f10s_t2s} -> {result[2:]}</code>\nРезультат: <code>{result[2:]}</code>", parse_mode='html')
+      if len(str(data['f10s_t2s'])) > 326:
+         await message.reply("Число слишком длинное. Лимит 326 символов. Отправь число поменьше.")
+         await state.set_state(Register.f10s_t2s)
+      else:
+         
+         s10 = int(data['f10s_t2s'])
+         result = sys10_2(number=s10)
+         await state.clear()
+         await message.reply(f"<blockquote expandable><u>{s10}</u>¹⁰ -> <code>{result[2:]}</code></blockquote>", parse_mode='html')
    except Exception as e:
       await message.reply(f"<code>error: {e}</code>\n\nВводи только числа. Буквы и прочие символы не переводятся.\nТы не сможешь переводить слишком большие значения.", parse_mode='html')
       await state.set_state(Register.f10s_t2s)
 
 @router.message(Command('crypto'))
 async def info_crypt(message: Message):
-   await message.reply(f"Вы можете зашифровывать и расшифровывать данные в текстовом формате.\n\nПримеры использования:\n\n<code>/decode 00111001</code> -> расшифровка\n\n<code>/encode Hello world</code> -> зашифровка", parse_mode='html')
+   await message.reply(f"Вы можете зашифровывать и расшифровывать данные в текстовом формате.\n\nПримеры использования:\n<blockquote><code>/decode 00111001</code> -> расшифровка</blockquote>\n<blockquote><code>/encode Hello world</code> -> зашифровка</blockquote>", parse_mode='html')
 
 @router.message(Command('decode'))
 async def decode_cmd(message: Message):
