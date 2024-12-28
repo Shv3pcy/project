@@ -25,7 +25,7 @@ class Register(StatesGroup):  # класс, в котором создаем г�
 router = Router() # класс, который будет распределяться в обработчике команд Dispatcher()
 
 async def main():
-  bot = Bot(token='7637943132:AAH59Dew5tRrpG62RTZrXMs_1kI9hDT48fI') # API-токен для бота
+  bot = Bot(token='7637943132:BBY12Jnm0tRrpG73RZLrWGs_1kI9hKT97qD') # API-токен для бота
   dp = Dispatcher() # обработчик команд
   dp.include_router(router)
   await dp.start_polling(bot)
@@ -163,7 +163,7 @@ async def sysfrom2_to10(message: Message, state: FSMContext):
            await state.clear()
            await message.reply(f"<blockquote expandable><u>{s2}</u>² -> <code>{result}</code></blockquote>", parse_mode='HTML')
    except Exception as e:
-      await message.reply(f"<pre><code class=language-Error>{e}</code></pre>\nПри переводе систем, вы используете только <bold>целые числа</bold>, и <bold>не превышающие 10⁹⁹</bold>.", parse_mode='html')
+      await message.reply(f"<pre><code class=language-Error>{e}</code></pre>\nПри переводе систем, вы используете только <bold>целые числа</bold>, и <bold>не превышающие 99 символов</bold>.", parse_mode='html')
       await state.set_state(Register.f2s_t10s)
       
 
@@ -188,7 +188,7 @@ async def sysfrom2_to10(message: Message, state: FSMContext):
          await state.clear()
          await message.reply(f"<blockquote expandable><u>{s10}</u>¹⁰ -> <code>{result[2:]}</code></blockquote>", parse_mode='html')
    except Exception as e:
-      await message.reply(f"<code>error: {e}</code>\n\nВводи только числа. Буквы и прочие символы не переводятся.\nТы не сможешь переводить слишком большие значения.", parse_mode='html')
+      await message.reply(f"<pre><code class=language-Error>{e}</code></pre>\nПри переводе систем, вы используете только <bold>целые числа</bold>, и <bold>не превышающие 326 символов</bold>.", parse_mode='html')
       await state.set_state(Register.f10s_t2s)
 
 @router.message(Command('crypto'))
