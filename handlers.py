@@ -1,16 +1,13 @@
-from aiogram import Bot, Dispatcher #импортировали все нужные модули из aiogram
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery, LinkPreviewOptions
 from aiogram.filters import CommandStart, Command
 from aiogram.fsm.state import  State, StatesGroup
 from aiogram.fsm.context import FSMContext
-from aiogram import Bot 
 import asyncio
 from aiogram.types import (InlineKeyboardMarkup, InlineKeyboardButton)
 from calculate import bmi_calc, sys10_2, sys2_10
 from en_decode import encode, decode
 from injections import injections_list
-
 
 """                                          
    Me: t.me/shv3pcy
@@ -24,13 +21,6 @@ class Register(StatesGroup):  # класс, в котором создаем г�
   f10s_t2s = State()          # регистр для перевода с 10-ичной системы в 2-ичную
 
 router = Router() # класс, который будет распределяться в обработчике команд Dispatcher()
-
-async def main():
-  bot = Bot(token='7637943132:BBY12Jnm0tRrpG73RZLrWGs_1kI9hKT97qD') # API-токен для бота
-  dp = Dispatcher() # обработчик команд
-  dp.include_router(router)
-  await dp.start_polling(bot)
-  print('BOT ON (ВКЛ)')
 
 @router.message(CommandStart()) #обработчик команды /start
 async def start(message: Message):
@@ -257,10 +247,3 @@ async def calc(message: Message):
             await message.reply(f"<pre><code class='language-Пример'>{example}</code></pre>\n<pre><code class='language-Ответ'>{result}</code></pre>", parse_mode='html')
       except Exception as e:
          await message.reply(f"Я не понял, чего ты хочешь.\n<pre>Помощь по боту /help</pre>",parse_mode='HTML')
-
-
-if __name__ == '__main__':
-  try:
-      asyncio.run(main())
-  except KeyboardInterrupt:
-      print('BOT OFF (ВЫКЛ)')
