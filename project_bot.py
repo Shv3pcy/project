@@ -1,6 +1,6 @@
 from aiogram import Bot, Dispatcher #импортировали все нужные модули из aiogram
 from aiogram import Router, F
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, LinkPreviewOptions
 from aiogram.filters import CommandStart, Command
 from aiogram.fsm.state import  State, StatesGroup
 from aiogram.fsm.context import FSMContext
@@ -9,6 +9,7 @@ import asyncio
 from aiogram.types import (InlineKeyboardMarkup, InlineKeyboardButton)
 from calculate import bmi_calc, sys10_2, sys2_10
 from en_decode import encode, decode
+from injections import injections_list
 
 
 """                                          
@@ -45,10 +46,13 @@ async def start(message: Message):
                     
    await message.reply_photo(photo="https://dc-agency.org/wp-content/uploads/2019/09/0_veNN9p3Zi4gQa-Zc.png",
                           reply_markup=menu,
-                          caption=f"Привет. Выбери одно из действий.\n<blockquote expandable>Калькулятор ИМТ</blockquote>\n<blockquote expandable>Калькулятор систем счислений</blockquote>", 
+                          caption=f"Привет, Выбери одно из действий.\nОзнакомиться — /help", 
                           parse_mode='HTML') # parse_mode - специальный параметр, для форматирования текста, чтобы задать тексту шрифт
                                           # reply_markup - параметр, с помощью которого прикрепим кнопки к сообщению
    
+@router.message(Command("help"))
+async def help(message: Message):
+   await message.reply(f"<b>» Основное меню</b><blockquote>/start<i> — приветствие от бота с прикрепленными снизу кнопками (меню):\n\n«Калькулятор ИМТ» — функция, которая считает ваш индекс массы тела по специальной формуле\n\n«Калькулятор систем счислений» — перевести число десятичной системы в двоичную и наоборот</i></blockquote>\n\n<b>» Шифрование</b>\n<blockquote><i>/crypto — получить информацию по шифрованию текста.\n/encode — зашифровать текст\n/decode — расшифровать текст</i></blockquote>\n\n» <b>Системные команды</b><blockquote>«<code>айди</code>»<i> — получить свой ID просто написав в чате команду или получить ID другого человека, ответив на его сообщение в группе.</i>\n«<code>чат айди</code>»<i> — получить ID группы, написав эту команду в ней.</i></blockquote>\n\n<b>» Прочее</b><blockquote>/donate<i> — получить ссылку на донат</i>\n<b><a href='https://github.com/Shv3pcy/project.git'>Репозиторий в GitHub</a></b></blockquote>", link_preview_options=LinkPreviewOptions(is_disabled=True), parse_mode='html')
 
 @router.message(Command('donate'))
 async def donate(message: Message):
@@ -226,7 +230,35 @@ async def decode_cmd(message: Message):
       await msg.edit_text(f"🔒 Текст был зашифрован.\n<pre><code class='language-Binary code'>{decode_text}</code></pre>\n<i>Нажать для копирования</i>", parse_mode='html')
    except Exception as e:
       await msg.edit_text(f"На этапе зашифровки появилась ошибка..\n<code>error: {e}</code>",parse_mode='HTML')
-     
+
+@router.message(F.text.lower() == 'чат айди')
+async def chat_id(message: Message):
+   if message.from_user.id == message.chat.id:
+      await message.reply(f'Данная команда предназначена для групп, если вы хотите узнать свой ID, напишите `<code>айди</code>`.', parse_mode='HTML')
+   else:
+      await message.reply(f'ID этой группы:<blockquote><code>{message.chat.id}</code></blockquote>\n<i>Нажать для копирования</i>', parse_mode='HTML')
+
+
+@router.message(F.text.lower() == 'айди')
+async def id(message: Message):
+   await message.reply(f'Ваш ID:<blockquote><code>{message.from_user.id}</code></blockquote>\n<i>Нажать для копирования</i>', parse_mode='HTML')
+
+@router.message()
+async def calc(message: Message):
+   #example = message.text.split(" ")
+   #example.remove(example[0])
+   #example = " ".join(example)
+      try:
+            for i in injections_list:
+               if i in message.text:
+                  await message.reply("«Выражение» содержит инъекцию 💉")
+            example = message.text
+            result = eval(f"{example}")
+            await message.reply(f"<pre><code class='language-Пример'>{example}</code></pre>\n<pre><code class='language-Ответ'>{result}</code></pre>", parse_mode='html')
+      except Exception as e:
+         await message.reply(f"Я не понял, чего ты хочешь.\n<pre>Помощь по боту /help</pre>",parse_mode='HTML')
+
+
 if __name__ == '__main__':
   try:
       asyncio.run(main())
