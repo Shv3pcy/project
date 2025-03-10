@@ -8,53 +8,35 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from calculate import bmi_calc, sys10_2, sys2_10
 from en_decode import encode, decode
 from injections import injections_list
+import ast
 
-"""                                          
-   Me: t.me/shv3pcy
-   This Bot: @SysBmi_bot                    
-"""
+router = Router()
 
+class Register(StatesGroup):
+    body_weight = State()
+    body_height = State()
+    f2s_t10s = State()
+    f10s_t2s = State()
 
-class Register(StatesGroup):  # класс, в котором создаем группу регистров
-    body_weight = State()  # регистр для массы тела
-    body_height = State()  # регистр для роста тела
-    f2s_t10s = State()  # регистр для перевода с 2-ичной системы в 10-ичную
-    f10s_t2s = State()  # регистр для перевода с 10-ичной системы в 2-ичную
-
-
-router = (
-    Router()
-)  # класс, который будет распределяться в обработчике команд Dispatcher()
-
-
-@router.message(CommandStart())  # обработчик команды /start
+@router.message(CommandStart())
 async def start(message: Message):
-
     menu = InlineKeyboardMarkup(
         inline_keyboard=[
             [
                 InlineKeyboardButton(text="Калькулятор ИМТ", callback_data="bmi_calc"),
-                InlineKeyboardButton(
-                    text="Калькулятор систем счислений", callback_data="calc_ofNumSys"
-                ),
+                InlineKeyboardButton(text="Калькулятор систем счислений", callback_data="calc_ofNumSys"),
             ],
             [
-                InlineKeyboardButton(
-                    text="Репозиторий в GitHub",
-                    url="https://github.com/Shv3pcy/project.git",
-                )
+                InlineKeyboardButton(text="Репозиторий в GitHub", url="https://github.com/Shv3pcy/project.git"),
             ],
         ]
     )
-
     await message.reply_photo(
         FSInputFile("./assets/start-banner.png"),
         reply_markup=menu,
         caption=f"Привет, Выбери одно из действий.\nОзнакомиться — /help",
         parse_mode="HTML",
-    )  # parse_mode - специальный параметр, для форматирования текста, чтобы задать тексту шрифт
-    # reply_markup - параметр, с помощью которого прикрепим кнопки к сообщению
-
+    )
 
 @router.message(Command("help"))
 async def help(message: Message):
@@ -64,39 +46,32 @@ async def help(message: Message):
         parse_mode="html",
     )
 
-
 @router.message(Command("donate"))
 async def donate(message: Message):
     donate_button = InlineKeyboardMarkup(
         inline_keyboard=[
             [
-                InlineKeyboardButton(
-                    text="99 RUB",
-                    url="https://yoomoney.ru/fundraise/dOeliARtiuQ.231119",
-                )
+                InlineKeyboardButton(text="99 RUB", url="https://yoomoney.ru/fundraise/dOeliARtiuQ.231119"),
             ]
         ]
     )
     await message.reply("Ссылка на донат", reply_markup=donate_button)
 
-
-@router.message(Command("cancel"))  # обработчик команды /cancel
+@router.message(Command("cancel"))
 async def cancel(message: Message, state: FSMContext):
-    await state.clear()  # метод clear() закрывает (отменяет) все регистры
+    await state.clear()
     await message.reply("Действие было отменено")
 
-
-@router.callback_query(F.data == "bmi_calc")  # обработчик callback запроса "bmi_calc"
+@router.callback_query(F.data == "bmi_calc")
 async def reply_menu1(clb: CallbackQuery, state: FSMContext):
     await clb.answer()
-    await state.set_state(Register.body_weight)  # создаем регистр массы тела
+    await state.set_state(Register.body_weight)
     await clb.message.reply(
         "Введи свою массу тела в килограммах. Принимаем только целые значения.\n<blockquote>Для отмены - /cancel</blockquote>",
         parse_mode="html",
     )
 
-
-@router.message(Register.body_weight)  # ловим регистр массы тела
+@router.message(Register.body_weight)
 async def ref_body_weighta(message: Message, state: FSMContext):
     try:
         await state.update_data(body_weight=message.text)
@@ -104,15 +79,10 @@ async def ref_body_weighta(message: Message, state: FSMContext):
 
         if int(data["body_weight"]) >= 1000:
             await message.reply("Нельзя вводить значения больше 1000!\nПопробуй заново")
-            await state.set_state(
-                Register.body_weight
-            )  # заново создаем регистр, при случае ошибки
+            await state.set_state(Register.body_weight)
 
         else:
-            await state.set_state(
-                Register.body_height
-            )  # в случае успеха, создаем новый регистр роста тела
-
+            await state.set_state(Register.body_height)
             await message.reply("Введи свой рост в метрах (например, 177см -> 1.77).")
 
     except Exception as e:
@@ -122,8 +92,7 @@ async def ref_body_weighta(message: Message, state: FSMContext):
         )
         await state.set_state(Register.body_weight)
 
-
-@router.message(Register.body_height)  # ловим регистр роста тела
+@router.message(Register.body_height)
 async def ref_rost(message: Message, state: FSMContext):
     try:
         await state.update_data(body_height=message.text)
@@ -166,8 +135,7 @@ async def ref_rost(message: Message, state: FSMContext):
         )
         await state.set_state(Register.body_weight)
 
-
-@router.callback_query(F.data == "calc_ofNumSys")  # обработчик callback запроса
+@router.callback_query(F.data == "calc_ofNumSys")
 async def reply_menu2(clb: CallbackQuery):
     await clb.answer()
     basics = InlineKeyboardMarkup(
@@ -184,21 +152,19 @@ async def reply_menu2(clb: CallbackQuery):
         parse_mode="html",
     )
 
-
 @router.callback_query(F.data == "from2_to10")
 async def system2(clb: CallbackQuery, state: FSMContext):
     await state.set_state(Register.f2s_t10s)
     await clb.answer()
     await clb.message.reply("Введи число двоичной системы, для перевода в десятичную")
 
-
 @router.message(Register.f2s_t10s)
 async def sysfrom2_to10(message: Message, state: FSMContext):
     try:
         await state.update_data(f2s_t10s=message.text)
         data = await state.get_data()
-        ban_list_numbers = "2" or "3" or "4" or "5" or "6" or "7" or "8" or "9"
-        if ban_list_numbers in str(data["f2s_t10s"]):
+        ban_list_numbers = "23456789"
+        if any(char in ban_list_numbers for char in str(data["f2s_t10s"])):
             await message.reply(
                 "Это число не является двоичной системой. Введи соответствующее значение."
             )
@@ -228,13 +194,11 @@ async def sysfrom2_to10(message: Message, state: FSMContext):
         )
         await state.set_state(Register.f2s_t10s)
 
-
-@router.callback_query(F.data == "from10_to2")  # обработчик callback запроса
+@router.callback_query(F.data == "from10_to2")
 async def system2(clb: CallbackQuery, state: FSMContext):
     await state.set_state(Register.f10s_t2s)
     await clb.answer()
     await clb.message.reply("Введи число десятичной системы, для перевода в двоичную")
-
 
 @router.message(Register.f10s_t2s)
 async def sysfrom2_to10(message: Message, state: FSMContext):
@@ -262,14 +226,12 @@ async def sysfrom2_to10(message: Message, state: FSMContext):
         )
         await state.set_state(Register.f10s_t2s)
 
-
 @router.message(Command("crypto"))
 async def info_crypt(message: Message):
     await message.reply(
         f"Вы можете зашифровывать и расшифровывать данные в текстовом формате.\n\nПримеры использования:\n<blockquote><code>/decode 00111001</code> -> расшифровка</blockquote>\n<blockquote><code>/encode Hello world</code> -> зашифровка</blockquote>",
         parse_mode="html",
     )
-
 
 @router.message(Command("decode"))
 async def decode_cmd(message: Message):
@@ -293,7 +255,6 @@ async def decode_cmd(message: Message):
             parse_mode="html",
         )
 
-
 @router.message(Command("encode"))
 async def decode_cmd(message: Message):
     try:
@@ -316,7 +277,6 @@ async def decode_cmd(message: Message):
             parse_mode="HTML",
         )
 
-
 @router.message(F.text.lower() == "чат айди")
 async def chat_id(message: Message):
     if message.from_user.id == message.chat.id:
@@ -330,7 +290,6 @@ async def chat_id(message: Message):
             parse_mode="HTML",
         )
 
-
 @router.message(F.text.lower() == "айди")
 async def id(message: Message):
     await message.reply(
@@ -338,18 +297,14 @@ async def id(message: Message):
         parse_mode="HTML",
     )
 
-
 @router.message()
 async def calc(message: Message):
-    # example = message.text.split(" ")
-    # example.remove(example[0])
-    # example = " ".join(example)
     try:
         for i in injections_list:
             if i in message.text:
                 await message.reply("«Выражение» содержит инъекцию 💉")
         example = message.text
-        result = eval(f"{example}")
+        result = ast.literal_eval(example)  # используем ast.literal_eval вместо eval
         await message.reply(
             f"<pre><code class='language-Пример'>{example}</code></pre>\n<pre><code class='language-Ответ'>{result}</code></pre>",
             parse_mode="html",
