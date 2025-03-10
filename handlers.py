@@ -1,5 +1,5 @@
 from aiogram import Router, F
-from aiogram.types import Message, CallbackQuery, LinkPreviewOptions
+from aiogram.types import Message, CallbackQuery, LinkPreviewOptions, FSInputFile
 from aiogram.filters import CommandStart, Command
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
@@ -48,7 +48,7 @@ async def start(message: Message):
     )
 
     await message.reply_photo(
-        photo="https://dc-agency.org/wp-content/uploads/2019/09/0_veNN9p3Zi4gQa-Zc.png",
+        FSInputFile("./assets/start-banner.png"),
         reply_markup=menu,
         caption=f"Привет, Выбери одно из действий.\nОзнакомиться — /help",
         parse_mode="HTML",
