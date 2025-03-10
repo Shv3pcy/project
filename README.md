@@ -85,5 +85,7 @@
 
 ## Контакты
 Telegram: [@SysBmi_Bot](https://t.me/SysBmi_Bot)
+
 GitHub: [https://github.com/Shv3pcy/project](https://github.com/Shv3pcy/project.git)
+
 Помогал улучшать: [N3rcy](https://github.com/N3rcy)
