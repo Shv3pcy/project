@@ -1,10 +1,10 @@
 from aiogram import Bot, Dispatcher
 import asyncio
 from handlers import router
-
+import config
 
 async def main():
-    bot = Bot(token="тут токен от бота @SysBmi_bot")
+    bot = Bot(token=config.BOT_TOKEN)
     dp = Dispatcher()  # обработчик команд
     dp.include_router(router)
     await dp.start_polling(bot)
