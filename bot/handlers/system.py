@@ -40,7 +40,7 @@ async def user_id(message: Message):
         parse_mode="HTML",
     )
 
-@router.message()
+@router.message(F.text)
 async def calculator(message: Message):
     """Handler for mathematical expressions
     
@@ -54,11 +54,31 @@ async def calculator(message: Message):
             
         # Try to evaluate as a mathematical expression
         example = message.text
-        result = ast.literal_eval(example)  # Using ast.literal_eval instead of eval for safety
-        await message.reply(
-            f"<pre><code class='language-Пример'>{example}</code></pre>\n<pre><code class='language-Ответ'>{result}</code></pre>",
-            parse_mode="html",
-        )
+        
+        # Convert the expression to a form that can be safely evaluated
+        try:
+            # Define safe functions and constants that can be used
+            safe_globals = {
+                "abs": abs, "max": max, "min": min, "round": round,
+                "sum": sum, "pow": pow, "int": int, "float": float,
+                "True": True, "False": False, "None": None
+            }
+            
+            # Evaluate the expression with restricted context
+            result = eval(example, {"__builtins__": {}}, safe_globals)
+            
+            await message.reply(
+                f"<pre><code class='language-Пример'>{example}</code></pre>\n<pre><code class='language-Ответ'>{result}</code></pre>",
+                parse_mode="html",
+            )
+        except (SyntaxError, NameError, TypeError):
+            # If it's not a valid mathematical expression, try literal_eval as fallback
+            result = ast.literal_eval(example)
+            
+            await message.reply(
+                f"<pre><code class='language-Пример'>{example}</code></pre>\n<pre><code class='language-Ответ'>{result}</code></pre>",
+                parse_mode="html",
+            )
     except Exception:
         # If not a valid expression, just ignore
         pass
