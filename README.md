@@ -36,7 +36,7 @@
 
 2. Установить необходимые зависимости:
    ```
-   pip install aiogram python-dotenv
+   pip install -r requirements.txt
    ```
 
 3. Создать файл `.env` на основе `.env.example` и добавить токен вашего бота:
