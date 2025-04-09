@@ -6,11 +6,13 @@ t.me/SysBmi_Bot
 """
 
 from aiogram import Router, F
-from aiogram.types import Message, CallbackQuery, LinkPreviewOptions, FSInputFile
+from aiogram.types import Message, LinkPreviewOptions, FSInputFile
 from aiogram.filters import CommandStart, Command
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 
 router = Router()
+
+active_users = set()
 
 @router.message(CommandStart())
 async def start(message: Message):
@@ -34,7 +36,37 @@ async def start(message: Message):
         reply_markup=menu,
         caption=f"Привет, Выбери одно из действий.\nОзнакомиться — /help",
         parse_mode="HTML",
+
     )
+
+    your_name_btn = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="your text", callback_data="data1"),
+                InlineKeyboardButton(text="your text", callback_data="data2"),
+                InlineKeyboardButton(text="your text", callback_data="data3"),
+                InlineKeyboardButton(text="your text", callback_data="data4"),
+                InlineKeyboardButton(text="your text", callback_data="data5")
+            ]
+    )
+    user_id = message.from_user.id
+    if user_id not in active_users:
+        active_users.add(user_id)
+
+        await message.answer("your text", reply_markup=your_name_btn)
+
+@router.callback_query(F.data.in_({"data1", "data2", "data3", "data4", "data5"}))
+async def assess(clb: CallbackQuery):
+
+    for i in range(1, 5):
+        asm = "asm_" + str(i)
+
+        if clb.data == asm:        
+            rating = int(asm[4:])
+
+    await clb.bot.send_message(chat_id="your id", text=f"your text, {rating}")
+    await clb.message.edit_text("Мы получили ваш отклик!")
+    await clb.answer(f"your text")
 
 @router.message(Command("help"))
 async def help(message: Message):
@@ -47,7 +79,7 @@ async def help(message: Message):
         link_preview_options=LinkPreviewOptions(is_disabled=True),
         parse_mode="html",
     )
-
+    
 @router.message(Command("donate"))
 async def donate(message: Message):
     """Handler for the /donate command
@@ -57,7 +89,7 @@ async def donate(message: Message):
     donate_button = InlineKeyboardMarkup(
         inline_keyboard=[
             [
-                InlineKeyboardButton(text="99 RUB", url="https://yoomoney.ru/fundraise/dOeliARtiuQ.231119"),
+                InlineKeyboardButton(text="Тык", url="your link for donate"),
             ]
         ]
     )
